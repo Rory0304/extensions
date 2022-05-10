@@ -16,6 +16,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/speakingurl/7.0.0/speakingurl.min.js"></script>
 
 <script>
+const SANITIZE_REGEX = /[`~!@#$%^&*()_|+\-=?;:'",.<>\\{\\}\\[\]\\\\/]/g;
+const WHITE_SPACE_REGEX = /\s+/g;
 var cfExt = window.contentfulExtension || window.contentfulWidget
 
 cfExt.init(function (api) {
@@ -56,14 +58,33 @@ cfExt.init(function (api) {
   }
 
   /**
+  * Remove all html tags within text
+  * @param html target html
+  */
+  function removeAllHtmlTag(html) {
+    return html.replace(/<\/?[^>]+(>|$)/g, '');
+  }
+
+  /**
+  * Convert text to slug form, ex)'ab-cd-ef'
+  * @param text target string
+  */
+  function convertToSlug(text) {
+    return removeAllHtmlTag(text)
+      .replace(SANITIZE_REGEX, '')
+      .replace(WHITE_SPACE_REGEX, '-');
+  }
+
+  /**
    * Set the input value to 'slug' and update the status by checking for
    * duplicates.
    */
   function setSlug (slug) {
-    input.value = slug
-    slugField.setValue(slug)
+    var convertedSlug = convertToSlug(slug);
+    input.value = convertedSlug
+    slugField.setValue(convertedSlug)
     setStatus('loading')
-    debouncedUpdateStatus(slug)
+    debouncedUpdateStatus(convertedSlug)
   }
 
   /**
